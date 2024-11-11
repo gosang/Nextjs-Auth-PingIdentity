@@ -165,33 +165,3 @@ export const authOptions: AuthOptions = {
 };
 
 export default NextAuth(authOptions);
-
-// import NextAuth from "next-auth";
-// import { JWT } from "next-auth/jwt";
-// import ForgeRockProvider from "next-auth/providers/forgerock";
-
-// export default NextAuth({
-//   providers: [
-//     ForgeRockProvider({
-//       clientId: process.env.FORGEROCK_CLIENT_ID!,
-//       clientSecret: process.env.FORGEROCK_CLIENT_SECRET!,
-//       issuer: process.env.FORGEROCK_ISSUER!,
-//       wellKnown: `${process.env.FORGEROCK_BASE_URL}/.well-known/openid-configuration`,
-//     }),
-//   ],
-//   callbacks: {
-//     async jwt({ token, account }: { token: JWT; account: any }) {
-//       if (account?.access_token) {
-//         token.accessToken = account.access_token;
-//       }
-//       return token;
-//     },
-//     async session({ session, token }: { session: any; token: JWT }) {
-//       session.accessToken = token.accessToken;
-//       return session;
-//     },
-//   },
-//   pages: {
-//     signIn: process.env.CENTRALIZED_AUTH_URL,
-//   },
-// });
