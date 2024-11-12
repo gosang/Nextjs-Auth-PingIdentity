@@ -19,7 +19,7 @@ const ForgeRockProvider = (): OAuthConfig<ForgeRockProfile> => ({
   authorization: {
     params: {
       scope: "openid profile email",
-      prompt: "login",
+      //prompt: "login",
       response_type: "code",
       client_id: process.env.FORGEROCK_CLIENT_ID,
       redirect_uri: process.env.NEXTAUTH_URL + "/api/auth/callback/forgerock",
@@ -39,7 +39,7 @@ const ForgeRockProvider = (): OAuthConfig<ForgeRockProfile> => ({
     },
   },
   userinfo: {
-    url: `${process.env.FORGEROCK_BASE_URL}/oauth2/realms/root/realms/${process.env.FORGEROCK_REALM}/userinfo`,
+    url: `${process.env.FORGEROCK_BASE_URL}/oauth2/${process.env.FORGEROCK_REALM}/userinfo`,
     async request({ tokens, provider }) {
       const response = await fetch(provider.userinfo?.url as string, {
         headers: {
@@ -106,7 +106,7 @@ export const authOptions: AuthOptions = {
       if (token.expiresAt && Date.now() >= token.expiresAt * 1000) {
         try {
           const response = await fetch(
-            `${process.env.FORGEROCK_BASE_URL}/oauth2/realms/root/realms/${process.env.FORGEROCK_REALM}/access_token`,
+            `${process.env.FORGEROCK_BASE_URL}/oauth2/${process.env.FORGEROCK_REALM}/access_token`,
             {
               method: "POST",
               headers: {
