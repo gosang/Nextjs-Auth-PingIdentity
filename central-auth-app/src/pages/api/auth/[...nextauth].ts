@@ -4,11 +4,10 @@ import {
   TokenManager,
   UserManager,
   FRAuth,
-  FRStep,
   FRLoginFailure,
 } from "@forgerock/javascript-sdk";
+import { AuthResponse, LoginRequest } from "@/types";
 
-// Configure ForgeRock SDK
 Config.set({
   clientId: process.env.FORGEROCK_CLIENT_ID!,
   redirectUri: process.env.FORGEROCK_REDIRECT_URI!,
@@ -17,23 +16,10 @@ Config.set({
     baseUrl: process.env.FORGEROCK_BASE_URL!,
     timeout: 30000,
   },
+  realmPath: process.env.FORGEROCK_REALM!,
+  tree: process.env.FORGEROCK_LOGIN!,
 });
 
-// Type definitions
-interface AuthResponse {
-  success: boolean;
-  redirectUrl?: string;
-  error?: string;
-}
-
-interface LoginRequest {
-  action: string;
-  redirectUri?: string;
-  username?: string;
-  password?: string;
-}
-
-// Auth handler
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<AuthResponse>
@@ -54,20 +40,26 @@ export default async function handler(
 
         if (username && password) {
           // Submit credentials
-          step.setCallbacks([
-            {
-              type: "NameCallback",
-              input: [{ name: "IDToken1", value: username }],
-            },
-            {
-              type: "PasswordCallback",
-              input: [{ name: "IDToken2", value: password }],
-            },
-          ]);
+          const usernameCallback = step.getCallbackOfType("NameCallback");
+          const passwordCallback = step.getCallbackOfType("PasswordCallback");
+
+          usernameCallback.setName(username);
+          passwordCallback.setPassword(password);
+
+          // step.setCallbacks([
+          //   {
+          //     type: "NameCallback",
+          //     input: [{ name: "IDToken1", value: username }],
+          //   },
+          //   {
+          //     type: "PasswordCallback",
+          //     input: [{ name: "IDToken2", value: password }],
+          //   },
+          // ]);
 
           const loginStep = await FRAuth.next(step);
 
-          if (loginStep.successfulLogin) {
+          if (loginStep.payload.status === 200) {
             // Generate PKCE challenge and get tokens
             const tokens = await TokenManager.getTokens({
               query: {
