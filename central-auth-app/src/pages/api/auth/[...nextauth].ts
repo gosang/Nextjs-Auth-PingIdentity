@@ -5,6 +5,8 @@ import {
   UserManager,
   FRAuth,
   FRLoginFailure,
+  FRStep,
+  CallbackType,
 } from "@forgerock/javascript-sdk";
 import { AuthResponse, LoginRequest } from "@/types";
 
@@ -35,29 +37,22 @@ export default async function handler(
 
     switch (action) {
       case "login":
-        // Start authentication process
         const step = await FRAuth.next();
 
         if (username && password) {
-          // Submit credentials
-          const usernameCallback = step.getCallbackOfType("NameCallback");
-          const passwordCallback = step.getCallbackOfType("PasswordCallback");
+          const currentStep = new FRStep(step.payload);
 
-          usernameCallback.setName(username);
-          passwordCallback.setPassword(password);
+          const usernameCallback = currentStep.getCallbackOfType(
+            CallbackType.NameCallback
+          );
+          const passwordCallback = currentStep.getCallbackOfType(
+            CallbackType.PasswordCallback
+          );
 
-          // step.setCallbacks([
-          //   {
-          //     type: "NameCallback",
-          //     input: [{ name: "IDToken1", value: username }],
-          //   },
-          //   {
-          //     type: "PasswordCallback",
-          //     input: [{ name: "IDToken2", value: password }],
-          //   },
-          // ]);
+          usernameCallback.setInputValue(username);
+          passwordCallback.setInputValue(password);
 
-          const loginStep = await FRAuth.next(step);
+          const loginStep = await FRAuth.next(currentStep);
 
           if (loginStep.payload.status === 200) {
             // Generate PKCE challenge and get tokens
